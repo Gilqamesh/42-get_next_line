@@ -21,12 +21,12 @@ size_t	ft_strlcpy(char *dst, const char *src, size_t size)
 	return (ft_strlen(src));
 }
 
-int		contains_newline(char *str)
+int		contains_newline(char *str, size_t n)
 {
 	int	index_of_newline;
 
 	index_of_newline = 0;
-	while (str[index_of_newline])
+	while (n-- && str[index_of_newline])	// probably do not need to check for null
 		if (str[index_of_newline] =='\n')
 			return (index_of_newline);
 	return (-1);
