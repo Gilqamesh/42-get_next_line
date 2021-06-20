@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:10:42 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/20 11:05:55 by marvin           ###   ########.fr       */
+/*   Updated: 2021/06/20 14:37:11 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,13 +59,22 @@ int get_next_line(int fd, char **line)
 			/* return success			*/
 			return (1);
 		}
-		// have not encountered EOF or err, check for newline and proceed accordingly
+		// have not encountered EOF or err, read in BUFFER_SIZE to buffer_stash, check for newline and proceed accordingly
 		/* find out if we have a new line stored 														*/
 		tmp_index = contains_newline(buffer_stash, read_bytes);
 		/* if we have a newline store the bytes up to the newline and deal with the remaining part 		*/
 		if (tmp_index >= 0) 			// buffer_stash contains newline
 		{
 			/* if tmp_index is 0, we do not store anything, we increment buffer_stash until we do not have a newline */
+			if (!tmp_index)
+			{
+				/* set bytes_syashed to one less 	*/
+				bytes_stashed = BUFFER_SIZE - 1;
+				/* offset buffer_stash to 0 		*/
+				ft_memmove(buffer_stash, buffer_stash + 1, BUFFER_SIZE - 1);
+				/* call get_next_line again			*/
+				return (get_next_line(fd, line));
+			}
 			/* store until newline in *line 			*/
 			*line = malloc(tmp_index + 1);
 			if (!*line)
@@ -77,7 +86,7 @@ int get_next_line(int fd, char **line)
 			}
 			ft_strlcpy(*line, buffer_stash, tmp_index + 1);
 			/* offset buffer_stash to 0 */
-			ft_memmove(buffer_stash, buffer_stash + tmp_index + 1, tmp_index + 1);
+			ft_memmove(buffer_stash, buffer_stash + tmp_index + 1, BUFFER_SIZE - (tmp_index + 1));
 			/* set bytes_stashed and return success */
 			bytes_stashed = BUFFER_SIZE - tmp_index;
 			return (1);
@@ -177,7 +186,7 @@ int get_next_line(int fd, char **line)
 			}
 			ft_strlcpy(*line, buffer_stash, tmp_index + 1);
 			/* offset buffer_stash to 0, ft_strlcpy will not work because the memory overlaps */
-			ft_memmove(buffer_stash, buffer_stash + tmp_index + 1, tmp_index + 1);
+			ft_memmove(buffer_stash, buffer_stash + tmp_index + 1, BUFFER_SIZE - (tmp_index + 1));
 			return (1);
 		}
 		// buffer_stash does not contain newline and EOF has not been reached

@@ -1,2 +1,5 @@
 *.o
 a.out
+Makefile
+driver.c
+test
