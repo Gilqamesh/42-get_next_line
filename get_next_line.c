@@ -6,7 +6,7 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:10:42 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/20 14:37:11 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/20 16:36:17 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,12 @@ int get_next_line(int fd, char **line)
 		}
 		if (read_bytes < BUFFER_SIZE) 	// we have read some bytes but encountered EOF
 		{
+			/* check for newline 		*/
+			tmp_index = contains_newline(buffer_stash, read_bytes);
+			if (tmp_index >= 0) // contains newline
+			{
+
+			}			
 			/* store the read in line 	*/
 			*line = malloc(read_bytes + 1);
 			if (!*line)
