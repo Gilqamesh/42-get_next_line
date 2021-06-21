@@ -6,7 +6,7 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:10:42 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/20 16:36:17 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/21 15:24:27 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,10 @@ int get_next_line(int fd, char **line)
 {
 	ssize_t			read_bytes;
 	static size_t	bytes_stashed = 0;
-	static char 	*buffer_stash;
+	static char 	*buffer_stash = (char *)0;
 	char			*tmp_str;
 	int				tmp_index;
+	static int		has_saved_str = 0;
 
 	if (!bytes_stashed) // we do not have a buffer stashed currently
 	{
@@ -29,9 +30,15 @@ int get_next_line(int fd, char **line)
 		if (!buffer_stash)
 		{
 			PRINT_ERR("malloc fail");
+			if (has_saved_str)
+			{
+				free(*line);
+				has_saved_str = 0;
+			}
 			return (-1);
 		}
 		read_bytes = read(fd, buffer_stash, BUFFER_SIZE);
+		bytes_stashed = read_bytes;
 		if (read_bytes <= 0) 			// error or first byte is EOF
 		{
 			/* free stuff before returning here */
@@ -39,65 +46,74 @@ int get_next_line(int fd, char **line)
 				PRINT_ERR("read fail");
 			bytes_stashed = 0;
 			free(buffer_stash);
+			if (has_saved_str)
+			{
+				has_saved_str = 0;
+				return (1);
+			}
 			return (read_bytes);
 		}
-		if (read_bytes < BUFFER_SIZE) 	// we have read some bytes but encountered EOF
+		tmp_index = contains_newline(buffer_stash, read_bytes);
+		/* check for newline 		*/
+		if (tmp_index >= 0) // contains newline
 		{
-			/* check for newline 		*/
-			tmp_index = contains_newline(buffer_stash, read_bytes);
-			if (tmp_index >= 0) // contains newline
+			// contains newline and its not the first byte
+			/* store up to newline excluded in *line, decrement bytes_stashed, offset buffer_stash and return success */
+			if (tmp_index < 0)
+				tmp_index = read_bytes; // make sure this is working properly and get of the next if as its redundant
+			tmp_str = malloc(tmp_index + 1);
+			if (!tmp_str)
 			{
-
-			}			
+				PRINT_ERR("malloc fail");
+				bytes_stashed = 0;
+				free(buffer_stash);
+				if (has_saved_str)
+				{
+					free(*line);
+					has_saved_str = 0;
+				}
+				return (-1);
+			}
+			ft_strlcpy(tmp_str, buffer_stash, tmp_index + 1);
+			if (has_saved_str)
+				*line = ft_strjoin(*line, tmp_str);
+			else
+				*line = tmp_str;
+			bytes_stashed -= tmp_index + 1;
+			ft_memmove(buffer_stash, buffer_stash + tmp_index + 1, tmp_index + 1);
+			return (1);
+		}
+		if (read_bytes < BUFFER_SIZE) 	// we have read some bytes but encountered EOF without meeting a newline
+		{
 			/* store the read in line 	*/
-			*line = malloc(read_bytes + 1);
-			if (!*line)
+			tmp_str = malloc(read_bytes + 1);
+			if (!tmp_str)
 			{
 				PRINT_ERR("malloc fail");
 				bytes_stashed = 0;
 				/* free stuff before returning with error */
 				free(buffer_stash);
+				if (has_saved_str)
+				{
+					free(*line);
+					has_saved_str = 0;
+				}
 				return (-1);
 			}
-			ft_strlcpy(*line, buffer_stash, read_bytes + 1);
+			ft_strlcpy(tmp_str, buffer_stash, read_bytes + 1);
+			if (has_saved_str)
+				*line = ft_strjoin(*line, tmp_str);
+			else
+				*line = tmp_str;
 			/* free the buffer_stash	*/
 			free(buffer_stash);
+			bytes_stashed = 0;
 			/* return success			*/
 			return (1);
 		}
-		// have not encountered EOF or err, read in BUFFER_SIZE to buffer_stash, check for newline and proceed accordingly
-		/* find out if we have a new line stored 														*/
-		tmp_index = contains_newline(buffer_stash, read_bytes);
-		/* if we have a newline store the bytes up to the newline and deal with the remaining part 		*/
-		if (tmp_index >= 0) 			// buffer_stash contains newline
-		{
-			/* if tmp_index is 0, we do not store anything, we increment buffer_stash until we do not have a newline */
-			if (!tmp_index)
-			{
-				/* set bytes_syashed to one less 	*/
-				bytes_stashed = BUFFER_SIZE - 1;
-				/* offset buffer_stash to 0 		*/
-				ft_memmove(buffer_stash, buffer_stash + 1, BUFFER_SIZE - 1);
-				/* call get_next_line again			*/
-				return (get_next_line(fd, line));
-			}
-			/* store until newline in *line 			*/
-			*line = malloc(tmp_index + 1);
-			if (!*line)
-			{
-				PRINT_ERR("malloc fail");
-				bytes_stashed = 0;
-				free(buffer_stash);
-				return (-1);
-			}
-			ft_strlcpy(*line, buffer_stash, tmp_index + 1);
-			/* offset buffer_stash to 0 */
-			ft_memmove(buffer_stash, buffer_stash + tmp_index + 1, BUFFER_SIZE - (tmp_index + 1));
-			/* set bytes_stashed and return success */
-			bytes_stashed = BUFFER_SIZE - tmp_index;
-			return (1);
-		}
-		/* if we do not have a newline, return success and reset bytes_stashed and free buffer_stash	*/
+		// ! LOOKS CORRECT UNTIL HERE !
+		// we do not have a newline and have read in BUFFER_SIZE amount
+		/* saved_str = strjoin(saved_str, buffer_stash), free buffer_stash and reset bytes_stashed, call get_next_line again */
 		*line = malloc(BUFFER_SIZE + 1);
 		if (!*line)
 		{

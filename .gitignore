@@ -1,7 +1,7 @@
-*.o
-a.out
-Makefile
-driver.c
-test
+# *.o
+# a.out
+# Makefile
+# driver.c
+# test
 42TESTERS-GNL
-files
+# files
