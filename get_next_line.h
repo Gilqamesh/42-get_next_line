@@ -6,7 +6,7 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:03:30 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/21 14:06:02 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/22 15:52:43 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,5 +20,6 @@ size_t	ft_strlcpy(char *dst, const char *src, size_t size);
 int		contains_newline(char *str, size_t n);
 void	*ft_memmove(void *dest, const void *src, size_t n);
 char 	*ft_strjoin(char const *s1, char const *s2);
+char	*ft_strdup(const char *s);
 
 #endif

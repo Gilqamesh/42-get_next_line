@@ -23,12 +23,15 @@ size_t	ft_strlcpy(char *dst, const char *src, size_t size)
 
 int		contains_newline(char *str, size_t n)
 {
-	int	index_of_newline;
+	size_t	index_of_newline;
 
 	index_of_newline = 0;
-	while (n-- && str[index_of_newline])	// probably do not need to check for null
-		if (str[index_of_newline] =='\n')
-			return (index_of_newline);
+	while (index_of_newline < n)
+	{
+		if (str[index_of_newline] == '\n')
+			return ((int)index_of_newline);
+		index_of_newline++;
+	}
 	return (-1);
 }
 
@@ -63,7 +66,15 @@ char 	*ft_strjoin(char const *s1, char const *s2)
 	return (new);
 }
 
-char	*replace_newline()
+char	*ft_strdup(const char *s)	// probably want to do up to size instead of till null char
 {
-	
+	size_t	len;
+	char	*new;
+
+	len = ft_strlen(s);
+	new = (char *)malloc(len + 1);
+	if (!new)
+		return ((char *)0);
+	ft_strlcpy(new, s, len + 1);
+	return (new);
 }
