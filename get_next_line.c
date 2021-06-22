@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:10:42 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/22 17:34:52 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/23 01:20:58 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,14 @@
 
 int get_next_line(int fd, char **line)
 {
-	ssize_t			read_bytes;
+	int				read_bytes;
 	static size_t	bytes_stashed = 0;
 	static char 	*buffer_stash = (char *)0;
 	char			*tmp_str;
 	char			*saved_str;
 	int				tmp_index;
 	static int		has_saved_str = 0;
+	static int		flag = 0;
 
 	if (!bytes_stashed)
 	{
@@ -33,18 +34,35 @@ int get_next_line(int fd, char **line)
 		}
 	}
 	read_bytes = read(fd, buffer_stash + bytes_stashed, BUFFER_SIZE - bytes_stashed);
+	if (!read_bytes && !bytes_stashed)
+	{
+		free(buffer_stash);
+		if (has_saved_str)
+		{
+			has_saved_str = 0;
+			flag = 1;
+			return (1);
+		}
+		if (flag)
+		{
+			flag = 0;
+			return (0);
+		}
+		*line = malloc(1);
+		if (!*line)
+			return (-1);
+		**line = '\0';
+		if (read_bytes > 0)
+			return (1);
+		return (0);
+	}
 	bytes_stashed += read_bytes;
-	if (read_bytes < 0 || (!read_bytes && !has_saved_str))
+	if (read_bytes < 0)
 	{
 		has_saved_str = 0;
 		bytes_stashed = 0;
 		free(buffer_stash);
-		if (read_bytes == 0)
-		{
-			*line = malloc(1);
-			**line = '\0';
-		}
-		return (read_bytes);
+		return (-1);
 	}
 	tmp_index = contains_newline(buffer_stash, bytes_stashed);
 	if (tmp_index < 0)
@@ -74,15 +92,19 @@ int get_next_line(int fd, char **line)
 	if (tmp_index < 0)
 	{
 		free(buffer_stash);
-		bytes_stashed = 0;
 		if (bytes_stashed == BUFFER_SIZE)
 		{
+			bytes_stashed = 0;
 			has_saved_str = 1;
 			return (get_next_line(fd, line));
 		}
+		bytes_stashed = 0;
 		return (1);
 	}
 	bytes_stashed -= tmp_index + 1;
-	ft_memmove(buffer_stash, buffer_stash + tmp_index + 1, BUFFER_SIZE);
+	if (!bytes_stashed)
+		free(buffer_stash);
+	else
+		ft_memmove(buffer_stash, buffer_stash + tmp_index + 1, BUFFER_SIZE);
 	return (1);
 }

@@ -10,7 +10,7 @@ size_t	ft_strlen(const char *s)
 	return (len);
 }
 
-size_t	ft_strlcpy(char *dst, const char *src, size_t size)
+void	ft_strlcpy(char *dst, const char *src, size_t size)
 {
 	if (size)
 	{
@@ -18,7 +18,6 @@ size_t	ft_strlcpy(char *dst, const char *src, size_t size)
 			*dst++ = *src++;
 		*dst = '\0';
 	}
-	return (ft_strlen(src));
 }
 
 int		contains_newline(char *str, size_t n)
@@ -66,7 +65,7 @@ char 	*ft_strjoin(char const *s1, char const *s2)
 	return (new);
 }
 
-char	*ft_strdup(const char *s)	// probably want to do up to size instead of till null char
+char	*ft_strdup(const char *s)
 {
 	size_t	len;
 	char	*new;
