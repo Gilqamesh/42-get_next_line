@@ -3,15 +3,33 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:10:42 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/23 10:37:08 by marvin           ###   ########.fr       */
+/*   Updated: 2021/06/23 13:50:29 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 #include <unistd.h>
+
+static int	reset_vars(char **buffer, int *has_s, size_t *bytes_s, int *empt)
+{
+	free(*buffer);
+	*has_s = 0;
+	*bytes_s = 0;
+	*empt = 1;
+	return (-1);
+}
+
+static int	make_empty_string(char **line)
+{
+	*line = malloc(1);
+	if (!*line)
+		return (-1);
+	**line = '\0';
+	return (0);
+}
 
 int get_next_line(int fd, char **line)
 {
@@ -22,17 +40,17 @@ int get_next_line(int fd, char **line)
 	char			*saved_str;
 	int				tmp_index;
 	static int		has_saved_str = 0;
+	static int		empty_file = 1;
 
 	if (!bytes_stashed)
-	{
 		buffer_stash = malloc(BUFFER_SIZE);
-		if (!buffer_stash)
-		{
-			has_saved_str = 0;
-			return (-1);
-		}
-	}
+	if (!buffer_stash)
+		return (reset_vars(&buffer_stash, &has_saved_str, &bytes_stashed, &empty_file));
 	read_bytes = read(fd, buffer_stash + bytes_stashed, BUFFER_SIZE - bytes_stashed);
+	if (read_bytes < 0)
+		return (reset_vars(&buffer_stash, &has_saved_str, &bytes_stashed, &empty_file));
+	if (empty_file && read_bytes > 0)
+		empty_file = 0;
 	if (!read_bytes && !bytes_stashed)
 	{
 		free(buffer_stash);
@@ -41,38 +59,21 @@ int get_next_line(int fd, char **line)
 			has_saved_str = 0;
 			return (0);
 		}
-		// going back to this it's more correct but why? :)
-		// *line = malloc(1);
-		// if (!*line)
-		// 	return (-1);
-		// **line = '\0';
-		return (0);
+		return (make_empty_string(line));
 	}
 	bytes_stashed += read_bytes;
-	if (read_bytes < 0)
-	{
-		has_saved_str = 0;
-		bytes_stashed = 0;
-		free(buffer_stash);
-		return (-1);
-	}
 	tmp_index = contains_newline(buffer_stash, bytes_stashed);
 	if (tmp_index < 0)
 		tmp_str = malloc(bytes_stashed + 1);
 	else
 		tmp_str = malloc(tmp_index + 1);
 	if (!tmp_str)
-	{
-		has_saved_str = 0;
-		bytes_stashed = 0;
-		free(buffer_stash);
-		return (-1);
-	}
+		return (reset_vars(&buffer_stash, &has_saved_str, &bytes_stashed, &empty_file));
 	if (tmp_index < 0)
 		ft_strlcpy(tmp_str, buffer_stash, bytes_stashed + 1);
 	else
 		ft_strlcpy(tmp_str, buffer_stash, tmp_index + 1);
-	if (has_saved_str)
+	if (has_saved_str)	// can make this shorter by rewriting strjoin a bit
 	{
 		saved_str = ft_strjoin(*line, tmp_str);
 		free(*line);
@@ -87,12 +88,6 @@ int get_next_line(int fd, char **line)
 		bytes_stashed = 0;
 		has_saved_str = 1;
 		return (get_next_line(fd, line));
-		/*if (bytes_stashed == BUFFER_SIZE)
-		{
-			has_saved_str = 1;
-			return (get_next_line(fd, line));
-		}
-		return (1);*/
 	}
 	has_saved_str = 0;
 	bytes_stashed -= tmp_index + 1;
