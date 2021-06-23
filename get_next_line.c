@@ -6,7 +6,7 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:10:42 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/23 14:44:16 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/23 16:37:49 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ static int	make_empty_string(char **line)
 	return (0);
 }
 
-static int	reset_vars(char **buffer, int *has_s, size_t *bytes_s)
+static int	reset_vars(char **buffer, int *has_s, int *bytes_s)
 {
 	if (buffer)
 		free(*buffer);
@@ -33,31 +33,33 @@ static int	reset_vars(char **buffer, int *has_s, size_t *bytes_s)
 	return (-1);
 }
 
+// try to get rid of the variable read_bytes and only work with bytes_stashed
+// always read in BUFFER_SIZE
 int get_next_line(int fd, char **line)
 {
-	int				read_bytes;
-	static size_t	bytes_stashed = 0;
+	static int		bytes_stashed = 0;
 	static char 	*buffer_stash = (char *)0;
 	char			*tmp_str; 
 	int				tmp_index;
 	static int		has_saved_str = 0;
 
 	if (!bytes_stashed)
-		buffer_stash = malloc(BUFFER_SIZE);
-	read_bytes = read(fd, buffer_stash + bytes_stashed, BUFFER_SIZE - bytes_stashed);
-	if (read_bytes < 0)
-		return (reset_vars(&buffer_stash, &has_saved_str, &bytes_stashed));
-	if (!read_bytes && !bytes_stashed)
 	{
-		free(buffer_stash);
-		if (has_saved_str)
+		buffer_stash = malloc(BUFFER_SIZE);
+		bytes_stashed = read(fd, buffer_stash, BUFFER_SIZE);
+		if (bytes_stashed < 0)
+			return (reset_vars(&buffer_stash, &has_saved_str, &bytes_stashed));
+		if (!bytes_stashed)
 		{
-			has_saved_str = 0;
-			return (0);
+			free(buffer_stash);
+			if (has_saved_str)
+			{
+				has_saved_str = 0;
+				return (0);
+			}
+			return (make_empty_string(line));
 		}
-		return (make_empty_string(line));
 	}
-	bytes_stashed += read_bytes;
 	tmp_index = contains_newline(buffer_stash, bytes_stashed);
 	if (tmp_index < 0)
 		tmp_str = malloc(bytes_stashed + 1);
