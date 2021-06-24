@@ -66,13 +66,12 @@ char 	*ft_strjoin_v2(char **s1, char const *s2)
 	return (new);
 }
 
-char	*ft_strdup(const char *s)
+char	*ft_strdup_v2(const char *s, int n)
 {
 	size_t	len;
 	char	*new;
 
-	len = ft_strlen(s);
-	new = (char *)malloc(len + 1);
+	new = (char *)malloc(n + 1);
 	if (!new)
 		return ((char *)0);
 	ft_strlcpy(new, s, len + 1);

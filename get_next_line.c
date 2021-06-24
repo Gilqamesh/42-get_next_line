@@ -6,12 +6,13 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:10:42 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/24 15:15:52 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/24 17:00:57 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 #include <unistd.h>
+#include <limits.h>
 
 static int	make_empty_string(char **line)
 {
@@ -33,16 +34,39 @@ static int	reset_vars(char **buffer, int *has_s, int *bytes_s)
 	return (-1);
 }
 
-// try to get rid of the variable read_bytes and only work with bytes_stashed
-// always read in BUFFER_SIZE
 int get_next_line(int fd, char **line)
 {
-	static int		bytes_stashed = 0;
-	static char 	*buffer_stash = (char *)0;
 	char			*tmp_str; 
 	int				tmp_index;
-	static int		has_saved_str = 0;
+	static char		*buffers[OPEN_MAX] = {0};
+	int				read_result;
+	int				cur_buf_len;
 
+	int cur_buf_len;
+	if (!buffers[fd])
+		buffers[fd] = malloc(BUFFER_SIZE + 1);
+	cur_buf_len = ft_strlen(buffers[fd]);
+	tmp_index = contains_newline(buffers[fd], cur_buf_len);
+	if (tmp_index == cur_buf_len)
+	{
+		tmp_str = buffers[fd];
+		buffers[fd] = malloc(cur_buf_len + BUFFER_SIZE + 1);
+		read_result = read(fd, buffers[fd] + cur_buf_len, BUFFER_SIZE);
+		buffers[fd] = ft_strjoin_v2(&tmp_str, buffers[fd] + cur_buf_len);
+		if (!read_result)
+		{
+			*line = buffers[fd];
+			return (0);
+		}
+		return (get_next_line(fd, line));
+	}
+	*line = ft_strdup_v2();
+
+
+
+
+
+	/*
 	if (!bytes_stashed)
 	{
 		buffer_stash = malloc(BUFFER_SIZE);
@@ -83,4 +107,5 @@ int get_next_line(int fd, char **line)
 	else
 		ft_memmove(buffer_stash, buffer_stash + tmp_index + 1, BUFFER_SIZE);
 	return (1);
+	*/
 }
