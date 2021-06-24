@@ -6,7 +6,7 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:10:42 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/23 16:37:49 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/24 15:15:52 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,22 +61,16 @@ int get_next_line(int fd, char **line)
 		}
 	}
 	tmp_index = contains_newline(buffer_stash, bytes_stashed);
-	if (tmp_index < 0)
-		tmp_str = malloc(bytes_stashed + 1);
-	else
-		tmp_str = malloc(tmp_index + 1);
+	tmp_str = malloc(tmp_index + 1);
 	if (!tmp_str)
 		return (reset_vars(&buffer_stash, &has_saved_str, &bytes_stashed));
-	if (tmp_index < 0)
-		ft_strlcpy(tmp_str, buffer_stash, bytes_stashed + 1);
-	else
-		ft_strlcpy(tmp_str, buffer_stash, tmp_index + 1);
+	ft_strlcpy(tmp_str, buffer_stash, tmp_index + 1);
 	if (has_saved_str)
 		*line = ft_strjoin_v2(line, tmp_str);
 	else
 		*line = ft_strdup(tmp_str);
 	free(tmp_str);
-	if (tmp_index < 0)
+	if (tmp_index == bytes_stashed)
 	{
 		reset_vars(&buffer_stash, (int *)0, &bytes_stashed);
 		has_saved_str = 1;

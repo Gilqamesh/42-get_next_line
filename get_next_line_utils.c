@@ -31,7 +31,7 @@ int		contains_newline(char *str, size_t n)
 			return ((int)index_of_newline);
 		index_of_newline++;
 	}
-	return (-1);
+	return (index_of_newline);
 }
 
 void	*ft_memmove(void *dest, const void *src, size_t n)
