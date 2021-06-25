@@ -3,17 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:10:42 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/25 11:37:53 by marvin           ###   ########.fr       */
+/*   Updated: 2021/06/25 13:33:20 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 #include <unistd.h>
 #include <limits.h>
-#define OPEN_MAX 1024
 
 /*
 static int	make_empty_string(char **line)
@@ -63,12 +62,12 @@ int get_next_line(int fd, char **line)
         cur_buf_len = ft_strlen(buffers[fd]);
 		tmp_index = contains_newline(buffers[fd], cur_buf_len);
 	}
-	if (tmp_index == cur_buf_len)
+	if (tmp_index == cur_buf_len)	// have some memory leak problem in this logic, also timeout for big files
 	{
 		tmp_str = ft_strdup_v2(buffers[fd], cur_buf_len);
 		free(buffers[fd]);
-		buffers[fd] = malloc(cur_buf_len + BUFFER_SIZE + 1);
 		cur_buf_len += BUFFER_SIZE;
+		buffers[fd] = malloc(cur_buf_len + 1);	// handle error
 		read_result = read(fd, buffers[fd], BUFFER_SIZE);	// handle -1
 		if (read_result == -1)
 		{
@@ -85,11 +84,11 @@ int get_next_line(int fd, char **line)
 			return (0);
 		}
 		buffers[fd][read_result] = '\0';
-		buffers[fd] = ft_strjoin_v2(&tmp_str, buffers[fd]);
+		buffers[fd] = ft_strjoin_v3(&tmp_str, &buffers[fd]);
 		return (get_next_line(fd, line));
 	}
 	*line = ft_strdup_v2(buffers[fd], tmp_index);
-	ft_memmove(buffers[fd], buffers[fd] + tmp_index + 1, cur_buf_len);
+	ft_memmove(buffers[fd], buffers[fd] + tmp_index + 1, cur_buf_len - tmp_index);
 	return (1);
 
 
