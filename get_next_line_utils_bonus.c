@@ -6,7 +6,7 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/25 13:38:23 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/25 13:41:12 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/25 13:53:25 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ void	ft_strlcpy(char *dst, const char *src, size_t size)
 	}
 }
 
-int		contains_newline(char *str, size_t n)
+int	contains_newline(char *str, size_t n)
 {
 	size_t	index_of_newline;
 

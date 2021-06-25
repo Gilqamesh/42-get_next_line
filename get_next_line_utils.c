@@ -20,7 +20,7 @@ void	ft_strlcpy(char *dst, const char *src, size_t size)
 	}
 }
 
-int		contains_newline(char *str, size_t n)
+int	contains_newline(char *str, size_t n)
 {
 	size_t	index_of_newline;
 

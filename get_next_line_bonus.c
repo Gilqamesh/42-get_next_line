@@ -6,7 +6,7 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/23 14:46:57 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/25 13:40:05 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/25 13:52:35 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,18 +14,18 @@
 #include <unistd.h>
 #include <limits.h>
 
-int get_next_line(int fd, char **line)
+int	get_next_line(int fd, char **line)
 {
-	char			*tmp_str; 
+	char			*tmp_str;
 	int				tmp_index;
 	static char		*buffers[OPEN_MAX] = {0};
 	int				read_result;
 	int				cur_buf_len;
 
 	if (!buffers[fd])
-    {
+	{
 		buffers[fd] = malloc(BUFFER_SIZE + 1);
-        cur_buf_len = BUFFER_SIZE;
+		cur_buf_len = BUFFER_SIZE;
 		read_result = read(fd, buffers[fd], BUFFER_SIZE);
 		if (read_result == -1)
 		{
@@ -35,10 +35,10 @@ int get_next_line(int fd, char **line)
 		}
 		buffers[fd][read_result] = '\0';
 		return (get_next_line(fd, line));
-    }
-    else
+	}
+	else
 	{
-        cur_buf_len = ft_strlen(buffers[fd]);
+		cur_buf_len = ft_strlen(buffers[fd]);
 		tmp_index = contains_newline(buffers[fd], cur_buf_len);
 	}
 	if (tmp_index == cur_buf_len)
