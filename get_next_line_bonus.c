@@ -6,85 +6,67 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/23 14:46:57 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/23 15:55:16 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/25 13:40:05 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 #include <unistd.h>
-
-static int	make_empty_string(char **line)
-{
-	*line = malloc(1);
-	if (!*line)
-		return (-1);
-	**line = '\0';
-	return (0);
-}
-
-static int	reset_vars(char **buffer, int *has_s, size_t *bytes_s)
-{
-	if (buffer)
-		free(*buffer);
-	if (has_s)
-		*has_s = 0;
-	if (bytes_s)
-		*bytes_s = 0;
-	return (-1);
-}
+#include <limits.h>
 
 int get_next_line(int fd, char **line)
 {
-	int				read_bytes;
-	static size_t	bytes_stashed = 0;
-	static char 	*buffer_stash = (char *)0;
 	char			*tmp_str; 
 	int				tmp_index;
-	static int		has_saved_str = 0;
+	static char		*buffers[OPEN_MAX] = {0};
+	int				read_result;
+	int				cur_buf_len;
 
-	if (!bytes_stashed)
-		buffer_stash = malloc(BUFFER_SIZE);
-	read_bytes = read(fd, buffer_stash + bytes_stashed, BUFFER_SIZE - bytes_stashed);
-	if (read_bytes < 0)
-		return (reset_vars(&buffer_stash, &has_saved_str, &bytes_stashed));
-	if (!read_bytes && !bytes_stashed)
-	{
-		free(buffer_stash);
-		if (has_saved_str)
+	if (!buffers[fd])
+    {
+		buffers[fd] = malloc(BUFFER_SIZE + 1);
+        cur_buf_len = BUFFER_SIZE;
+		read_result = read(fd, buffers[fd], BUFFER_SIZE);
+		if (read_result == -1)
 		{
-			has_saved_str = 0;
+			free(buffers[fd]);
+			buffers[fd] = (char *)0;
+			return (-1);
+		}
+		buffers[fd][read_result] = '\0';
+		return (get_next_line(fd, line));
+    }
+    else
+	{
+        cur_buf_len = ft_strlen(buffers[fd]);
+		tmp_index = contains_newline(buffers[fd], cur_buf_len);
+	}
+	if (tmp_index == cur_buf_len)
+	{
+		tmp_str = ft_strdup_v2(buffers[fd], cur_buf_len);
+		free(buffers[fd]);
+		cur_buf_len += BUFFER_SIZE;
+		buffers[fd] = malloc(cur_buf_len + 1);
+		read_result = read(fd, buffers[fd], BUFFER_SIZE);
+		if (read_result == -1)
+		{
+			free(tmp_str);
+			free(buffers[fd]);
+			buffers[fd] = (char *)0;
+			return (-1);
+		}
+		if (!read_result)
+		{
+			*line = tmp_str;
+			free(buffers[fd]);
+			buffers[fd] = (char *)0;
 			return (0);
 		}
-		return (make_empty_string(line));
-	}
-	bytes_stashed += read_bytes;
-	tmp_index = contains_newline(buffer_stash, bytes_stashed);
-	if (tmp_index < 0)
-		tmp_str = malloc(bytes_stashed + 1);
-	else
-		tmp_str = malloc(tmp_index + 1);
-	if (!tmp_str)
-		return (reset_vars(&buffer_stash, &has_saved_str, &bytes_stashed));
-	if (tmp_index < 0)
-		ft_strlcpy(tmp_str, buffer_stash, bytes_stashed + 1);
-	else
-		ft_strlcpy(tmp_str, buffer_stash, tmp_index + 1);
-	if (has_saved_str)
-		*line = ft_strjoin_v2(line, tmp_str);
-	else
-		*line = ft_strdup(tmp_str);
-	free(tmp_str);
-	if (tmp_index < 0)
-	{
-		reset_vars(&buffer_stash, (int *)0, &bytes_stashed);
-		has_saved_str = 1;
+		buffers[fd][read_result] = '\0';
+		buffers[fd] = ft_strjoin_v3(&tmp_str, &buffers[fd]);
 		return (get_next_line(fd, line));
 	}
-	has_saved_str = 0;
-	bytes_stashed -= tmp_index + 1;
-	if (!bytes_stashed)
-		free(buffer_stash);
-	else
-		ft_memmove(buffer_stash, buffer_stash + tmp_index + 1, BUFFER_SIZE);
+	*line = ft_strdup_v2(buffers[fd], tmp_index);
+	ft_memmove(buffers[fd], buffers[fd] + tmp_index + 1, cur_buf_len - tmp_index);
 	return (1);
 }
