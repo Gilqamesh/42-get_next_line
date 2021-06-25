@@ -6,7 +6,7 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:03:30 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/25 13:35:13 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/25 17:12:57 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #include <stdlib.h>
 int		get_next_line(int fd, char **line);
 size_t	ft_strlen(const char *s);
-void	ft_strlcpy(char *dst, const char *src, size_t size);
 int		contains_newline(char *str, size_t n);
 void	*ft_memmove(void *dest, const void *src, size_t n);
 char 	*ft_strjoin_v3(char **s1, char **s2);

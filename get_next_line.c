@@ -6,7 +6,7 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:10:42 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/25 13:50:48 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/25 18:28:33 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,59 +14,70 @@
 #include <unistd.h>
 #include <limits.h>
 
+static int	reset_ret(char **line, int ret, char **buf_p)
+{
+	if (line)
+	{
+		*line = malloc(1);
+		**line = '\0';
+	}
+	if (buf_p)
+	{
+		free(*buf_p);
+		*buf_p = (char *)0;
+	}
+	return (ret);
+}
+
+static int	get_next_line2(char ***buf, int buf_len,
+char **line, int fd) // fix triple pointer so that reset_ret and
+					// get_next_line works in this
+{
+	char	*tmp_str;
+	int		tmp_index;
+
+	tmp_str = ft_strdup_v2(buf[fd], buf_len);
+	free(buf[fd]);
+	buf_len += BUFFER_SIZE;
+	buf[fd] = malloc(buf_len + 1);
+	tmp_index = read(fd, buf[fd], BUFFER_SIZE);
+	if (tmp_index <= 0)
+	{
+		if (tmp_index == 0)
+			*line = tmp_str;
+		else
+			free(tmp_str);
+		return (reset_ret((char **)0, tmp_index, &buf[fd]));
+	}
+	buf[fd][tmp_index] = '\0';
+	buf[fd] = ft_strjoin_v3(&tmp_str, &buf[fd]);
+	return (get_next_line(fd, line));
+}
+
 int	get_next_line(int fd, char **line)
 {
 	char			*tmp_str;
 	int				tmp_index;
+	int				buf_len;
 	static char		*buffers[OPEN_MAX] = {0};
-	int				read_result;
-	int				cur_buf_len;
 
 	if (!buffers[fd])
 	{
 		buffers[fd] = malloc(BUFFER_SIZE + 1);
-		cur_buf_len = BUFFER_SIZE;
-		read_result = read(fd, buffers[fd], BUFFER_SIZE);
-		if (read_result == -1)
-		{
-			free(buffers[fd]);
-			buffers[fd] = (char *)0;
-			return (-1);
-		}
-		buffers[fd][read_result] = '\0';
+		buf_len = BUFFER_SIZE;
+		tmp_index = read(fd, buffers[fd], BUFFER_SIZE);
+		if (tmp_index == 0)
+			return (reset_ret(line, 0, &buffers[fd]));
+		if (tmp_index == -1)
+			return (reset_ret((char **)0, -1, &buffers[fd]));
+		buffers[fd][tmp_index] = '\0';
 		return (get_next_line(fd, line));
 	}
-	else
-	{
-		cur_buf_len = ft_strlen(buffers[fd]);
-		tmp_index = contains_newline(buffers[fd], cur_buf_len);
-	}
-	if (tmp_index == cur_buf_len)
-	{
-		tmp_str = ft_strdup_v2(buffers[fd], cur_buf_len);
-		free(buffers[fd]);
-		cur_buf_len += BUFFER_SIZE;
-		buffers[fd] = malloc(cur_buf_len + 1);
-		read_result = read(fd, buffers[fd], BUFFER_SIZE);
-		if (read_result == -1)
-		{
-			free(tmp_str);
-			free(buffers[fd]);
-			buffers[fd] = (char *)0;
-			return (-1);
-		}
-		if (!read_result)
-		{
-			*line = tmp_str;
-			free(buffers[fd]);
-			buffers[fd] = (char *)0;
-			return (0);
-		}
-		buffers[fd][read_result] = '\0';
-		buffers[fd] = ft_strjoin_v3(&tmp_str, &buffers[fd]);
-		return (get_next_line(fd, line));
-	}
+	buf_len = ft_strlen(buffers[fd]);
+	tmp_index = contains_newline(buffers[fd], buf_len);
+	if (tmp_index == buf_len)
+		return (get_next_line2(&buffers[fd], buf_len, line, fd));
 	*line = ft_strdup_v2(buffers[fd], tmp_index);
-	ft_memmove(buffers[fd], buffers[fd] + tmp_index + 1, cur_buf_len - tmp_index);
+	ft_memmove(buffers[fd], buffers[fd] + tmp_index + 1, buf_len - tmp_index);
 	return (1);
 }

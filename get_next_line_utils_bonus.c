@@ -6,7 +6,7 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/25 13:38:23 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/25 13:53:25 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/25 16:52:20 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,16 +20,6 @@ size_t	ft_strlen(const char *s)
 	while (*s++)
 		len++;
 	return (len);
-}
-
-void	ft_strlcpy(char *dst, const char *src, size_t size)
-{
-	if (size)
-	{
-		while (--size && *src)
-			*dst++ = *src++;
-		*dst = '\0';
-	}
 }
 
 int	contains_newline(char *str, size_t n)
@@ -66,26 +56,38 @@ char 	*ft_strjoin_v3(char **s1, char **s2)
 	size_t	s1_len;
 	size_t	s2_len;
 	char	*new;
+	char	*r;
+	char	*tmp;
 
 	s1_len = ft_strlen(*s1);
 	s2_len = ft_strlen(*s2);
 	new = (char *)malloc(s1_len + s2_len + 1);
 	if (!new)
 		return ((char *)0);
-	ft_strlcpy(new, *s1, s1_len + 1);
-	ft_strlcpy(new + s1_len, *s2, s2_len + 1);
+	r = new;
+	tmp = *s1;
+	while (s1_len--)
+		*r++ = *tmp++;
 	free(*s1);
+	tmp = *s2;
+	while (s2_len--)
+		*r++ = *tmp++;
 	free(*s2);
+	*r = '\0';
 	return (new);
 }
 
 char	*ft_strdup_v2(const char *s, int n)
 {
 	char	*new;
+	char	*r;
 
 	new = (char *)malloc(n + 1);
 	if (!new)
 		return ((char *)0);
-	ft_strlcpy(new, s, n + 1);
-	return (new);
+	r = new;
+	while (n--)
+		*new++ = *s++;
+	*new = '\0';
+	return (r);
 }
