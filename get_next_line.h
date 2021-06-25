@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:03:30 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/24 17:01:47 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/25 09:27:58 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,11 @@
 
 #include <stdlib.h>
 int		get_next_line(int fd, char **line);
-size_t	ft_strlen_v2(const char *s);
+size_t	ft_strlen(const char *s);
 void	ft_strlcpy(char *dst, const char *src, size_t size);
 int		contains_newline(char *str, size_t n);
 void	*ft_memmove(void *dest, const void *src, size_t n);
 char 	*ft_strjoin_v2(char **s1, char const *s2);
-char	*ft_strdup_v2(const char *s);
+char	*ft_strdup_v2(const char *s, int n);
 
 #endif
