@@ -6,7 +6,7 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:10:42 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/25 18:28:33 by edavid           ###   ########.fr       */
+/*   Updated: 2021/06/25 20:25:35 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,8 @@ static int	reset_ret(char **line, int ret, char **buf_p)
 	return (ret);
 }
 
-static int	get_next_line2(char ***buf, int buf_len,
-char **line, int fd) // fix triple pointer so that reset_ret and
-					// get_next_line works in this
+static int	get_next_line2(char **buf, int buf_len,
+char **line, int fd)
 {
 	char	*tmp_str;
 	int		tmp_index;
@@ -56,7 +55,6 @@ char **line, int fd) // fix triple pointer so that reset_ret and
 
 int	get_next_line(int fd, char **line)
 {
-	char			*tmp_str;
 	int				tmp_index;
 	int				buf_len;
 	static char		*buffers[OPEN_MAX] = {0};
@@ -76,7 +74,7 @@ int	get_next_line(int fd, char **line)
 	buf_len = ft_strlen(buffers[fd]);
 	tmp_index = contains_newline(buffers[fd], buf_len);
 	if (tmp_index == buf_len)
-		return (get_next_line2(&buffers[fd], buf_len, line, fd));
+		return (get_next_line2(buffers, buf_len, line, fd));
 	*line = ft_strdup_v2(buffers[fd], tmp_index);
 	ft_memmove(buffers[fd], buffers[fd] + tmp_index + 1, buf_len - tmp_index);
 	return (1);
