@@ -3,6 +3,7 @@
 # Makefile
 # driver.c
 # test
-42TESTERS-GNL
+42TESTERS-GNL/
 # files
 gnlTester
+.DS_Store

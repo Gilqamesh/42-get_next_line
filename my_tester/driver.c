@@ -21,16 +21,19 @@ int main(void)
 	}
 	char *str;
 	int r;
-	while ((r = get_next_line(stdin, &str)) > 0)
+	while ((r = get_next_line(stdin, &str)) >= 0)
 	{
 		printf("%s", str);
-		free(str); 
+		free(str);
 		printf("\n");
-	}
-	printf("r = %d", r);
-	if (r < 0)
-	{
-		return (-1);
+		if (r == 0)
+			break ;
 	}
 	fclose(fp);
+	if (r < 0)
+	{
+		printf("read error in get_next_line\n");
+		return (-1);
+	}
+	return (0);
 }

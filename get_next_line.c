@@ -6,7 +6,7 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:10:42 by edavid            #+#    #+#             */
-/*   Updated: 2021/06/25 20:25:35 by edavid           ###   ########.fr       */
+/*   Updated: 2021/07/01 13:30:36 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,8 @@ int	get_next_line(int fd, char **line)
 	int				buf_len;
 	static char		*buffers[OPEN_MAX] = {0};
 
+	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (-1);
 	if (!buffers[fd])
 	{
 		buffers[fd] = malloc(BUFFER_SIZE + 1);
