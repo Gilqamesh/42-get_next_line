@@ -6,7 +6,7 @@
 /*   By: edavid <edavid@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/19 15:10:42 by edavid            #+#    #+#             */
-/*   Updated: 2021/07/01 13:30:36 by edavid           ###   ########.fr       */
+/*   Updated: 2021/07/01 13:57:26 by edavid           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 static int	reset_ret(char **line, int ret, char **buf_p)
 {
-	if (line)
+	if (!ret && line)
 	{
 		*line = malloc(1);
 		**line = '\0';
@@ -59,17 +59,17 @@ int	get_next_line(int fd, char **line)
 	int				buf_len;
 	static char		*buffers[OPEN_MAX] = {0};
 
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	if (fd < 0 || BUFFER_SIZE <= 0 || !line)
 		return (-1);
 	if (!buffers[fd])
 	{
 		buffers[fd] = malloc(BUFFER_SIZE + 1);
+		if (!buffers[fd])
+			return (-1);
 		buf_len = BUFFER_SIZE;
 		tmp_index = read(fd, buffers[fd], BUFFER_SIZE);
-		if (tmp_index == 0)
-			return (reset_ret(line, 0, &buffers[fd]));
-		if (tmp_index == -1)
-			return (reset_ret((char **)0, -1, &buffers[fd]));
+		if (tmp_index <= 0)
+			return (reset_ret(line, tmp_index, &buffers[fd]));
 		buffers[fd][tmp_index] = '\0';
 		return (get_next_line(fd, line));
 	}
